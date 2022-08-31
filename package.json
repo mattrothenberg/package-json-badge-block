@@ -10,6 +10,7 @@
     "@githubnext/blocks": "^2.0.8",
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^2.0.10",
+    "query-registry": "^2.6.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-runkit": "^0.9.0",

@@ -1,9 +1,10 @@
 import wretch from "wretch";
 import { useEffect, useState } from "react";
+import { getPackument } from "query-registry";
 import useSWR from "swr";
 import { PackageDetailResponse } from "../types";
 
-export const fetcher = (url: string) =>
+export const packageDetailsFetcher = (url: string) =>
   wretch(url)
     .get()
     .json<PackageDetailResponse>()
@@ -15,7 +16,13 @@ export const fetcher = (url: string) =>
 export function usePackageDetails(name: string) {
   return useSWR(
     `https://api.npms.io/v2/package/${encodeURIComponent(name)}`,
-    fetcher
+    packageDetailsFetcher
+  );
+}
+
+export function useRegistryDetails(name: string) {
+  return useSWR(`https://registry.npmjs.org/${encodeURIComponent(name)}`, () =>
+    getPackument({ name })
   );
 }
 

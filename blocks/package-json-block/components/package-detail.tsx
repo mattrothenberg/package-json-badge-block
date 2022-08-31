@@ -1,5 +1,6 @@
 import { Tab } from "@headlessui/react";
 import { Avatar, AvatarStack } from "@primer/react";
+import { Disclosure } from "@headlessui/react";
 
 // @ts-ignore
 import Embed from "react-runkit";
@@ -11,10 +12,13 @@ import React from "react";
 import { PackageDetailResponse, PackageJson } from "../types";
 import { Label } from "./label";
 import {
+  ClockIcon,
   CommandLineIcon,
   InformationCircleIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/solid";
+import { useRegistryDetails } from "../hooks";
+import { ErrorState } from "./error-state";
 
 interface PackageDetailProps {
   pkgJson: PackageJson;
@@ -23,7 +27,7 @@ interface PackageDetailProps {
 
 function RunkitEmbed({ pkgJson }: PackageDetailProps) {
   return (
-    <div className={tw`pl-8 pr-4 py-4`}>
+    <div className={tw`pl-8 pr-4 py-4 bg-gray-50`}>
       <Embed minHeight="200px" source={`require('${pkgJson.name}')`} />
     </div>
   );
@@ -153,11 +157,66 @@ function BundleComposition(props: PackageDetailProps) {
   );
 }
 
+function Versions({ pkgJson }: PackageDetailProps) {
+  const { data, error } = useRegistryDetails(pkgJson.name);
+  console.log(data);
+
+  if (!data)
+    return (
+      <div className={tw`p-4`}>
+        <p className={tw`animate-pulse text-gray-600 text-sm`}>
+          Loading version history...
+        </p>
+      </div>
+    );
+
+  if (error) return <ErrorState>Failed to load version history.</ErrorState>;
+
+  return (
+    <div className={tw`divide-y flex flex-col`}>
+      {Object.keys(data.versions).map((versionNumber) => {
+        return (
+          <Disclosure>
+            <Disclosure.Button className={tw`p-2 text-left text-sm font-mono`}>
+              {versionNumber}
+            </Disclosure.Button>
+            <Disclosure.Panel className={tw`bg-gray-50 p-4 text-sm`}>
+              <div className={tw`flex flex-wrap gap-4`}>
+                <div>
+                  <Label>Date</Label>
+                  <p className={tw`font-mono text-sm mt-1`}>
+                    {new Date(
+                      data.versionsToTimestamps[versionNumber]
+                    ).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <Label>SHA</Label>
+                  <p className={tw`font-mono text-sm mt-1`}>
+                    {data.versions[versionNumber].dist.shasum}
+                  </p>
+                </div>
+                <div>
+                  <Label>File Count</Label>
+                  <p className={tw`font-mono text-sm mt-1`}>
+                    {data.versions[versionNumber].dist.fileCount}
+                  </p>
+                </div>
+              </div>
+            </Disclosure.Panel>
+          </Disclosure>
+        );
+      })}
+    </div>
+  );
+}
+
 export function PackageDetail(props: PackageDetailProps) {
   return (
     <Tab.Group>
       <Tab.List className={tw`border-b flex`}>
         <CustomTab icon={<InformationCircleIcon />}>Details</CustomTab>
+        <CustomTab icon={<ClockIcon />}>Versions</CustomTab>
         <CustomTab icon={<CommandLineIcon />}>RunKit</CustomTab>
         <CustomTab icon={<Squares2X2Icon />}>Bundle Composition</CustomTab>
         <div
@@ -171,6 +230,9 @@ export function PackageDetail(props: PackageDetailProps) {
       <Tab.Panels className={tw`border-b`}>
         <Tab.Panel>
           <Details {...props} />
+        </Tab.Panel>
+        <Tab.Panel>
+          <Versions {...props} />
         </Tab.Panel>
         <Tab.Panel>
           <RunkitEmbed {...props} />
