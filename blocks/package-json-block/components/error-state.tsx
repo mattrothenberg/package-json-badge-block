@@ -1,7 +1,8 @@
 import { XCircleIcon } from "@heroicons/react/24/solid";
+import React from "react";
 import { tw } from "twind";
 
-export function ErrorState() {
+export function ErrorState(props: { children: React.ReactNode }) {
   return (
     <div className={tw`rounded-md bg-red-50 p-4`}>
       <div className={tw`flex`}>
@@ -13,7 +14,7 @@ export function ErrorState() {
         </div>
         <div className={tw`ml-3`}>
           <h3 className={tw`text-sm font-medium text-red-800`}>
-            This block only works on package.json
+            {props.children}
           </h3>
         </div>
       </div>
