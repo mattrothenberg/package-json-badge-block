@@ -10,6 +10,11 @@ import { tw } from "twind";
 import React from "react";
 import { PackageDetailResponse, PackageJson } from "../types";
 import { Label } from "./label";
+import {
+  CommandLineIcon,
+  InformationCircleIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/24/solid";
 
 interface PackageDetailProps {
   pkgJson: PackageJson;
@@ -30,9 +35,11 @@ function Details({ pkgJson, details }: PackageDetailProps) {
       <div>
         <Label>Latest Version</Label>
         <div className={tw`mt-2 flex items-center space-x-2`}>
-          <p className={tw`text-sm font-mono`}>
+          <span
+            className={tw`inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800`}
+          >
             {details.collected.metadata.version}
-          </p>
+          </span>
         </div>
       </div>
       <div>
@@ -110,20 +117,39 @@ function Details({ pkgJson, details }: PackageDetailProps) {
   );
 }
 
-function CustomTab(props: { children: React.ReactNode }) {
+function CustomTab(props: {
+  children: React.ReactNode;
+  icon: React.ReactNode;
+}) {
   return (
     <Tab as={React.Fragment}>
       {({ selected }) => (
         <button
-          className={tw(`p-2 text-sm border-b-2`, {
-            "text-blue-600 font-medium border-blue-600": selected,
-            "text-gray-600 border-transparent": !selected,
-          })}
+          className={tw(
+            `py-2 px-4 text-sm border-b-2 inline-flex items-center`,
+            {
+              "text-blue-600 font-medium border-blue-600": selected,
+              "text-gray-600 border-transparent": !selected,
+            }
+          )}
         >
-          {props.children}
+          <span className={tw`flex-shrink-0 w-5 mr-2`}>{props.icon}</span>
+          <span>{props.children}</span>
         </button>
       )}
     </Tab>
+  );
+}
+
+function BundleComposition(props: PackageDetailProps) {
+  return (
+    <iframe
+      className={tw`w-full h-full h-[400px]`}
+      frameBorder={0}
+      src={`https://bundlephobia.com/package/${encodeURIComponent(
+        props.pkgJson.name
+      )}@${props.pkgJson.version}`}
+    />
   );
 }
 
@@ -131,8 +157,9 @@ export function PackageDetail(props: PackageDetailProps) {
   return (
     <Tab.Group>
       <Tab.List className={tw`border-b flex`}>
-        <CustomTab>Details</CustomTab>
-        <CustomTab>RunKit</CustomTab>
+        <CustomTab icon={<InformationCircleIcon />}>Details</CustomTab>
+        <CustomTab icon={<CommandLineIcon />}>RunKit</CustomTab>
+        <CustomTab icon={<Squares2X2Icon />}>Bundle Composition</CustomTab>
         <div
           className={tw`p-2 bg-gray-50 inline-flex items-center justify-center border-l ml-auto`}
         >
@@ -147,6 +174,9 @@ export function PackageDetail(props: PackageDetailProps) {
         </Tab.Panel>
         <Tab.Panel>
           <RunkitEmbed {...props} />
+        </Tab.Panel>
+        <Tab.Panel>
+          <BundleComposition {...props} />
         </Tab.Panel>
       </Tab.Panels>
     </Tab.Group>
